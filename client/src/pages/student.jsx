@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import StudentNav from "../components/studentNav";
 import axios from "axios";
 import Footer from "../components/footer";
+import SemesterGrid from "../components/semcards";
 
 const Student = () => {
     const [studentDetails, setStudentDetails] = useState(null);
@@ -385,6 +386,7 @@ const Student = () => {
             )}
 
             {profile === 1 && (
+                <>
                 <div className="alert alert-info m-5" role="alert">
                     <div className="d-flex justify-content-between">
                         <span>
@@ -393,8 +395,13 @@ const Student = () => {
                         <button className="btn btn-outline-primary btn-sm">Edit</button>
                     </div>
                 </div>
+                <br /><br />
+                <SemesterGrid/>
+                <br /></>
             )}
-        </div><Footer /></>
+        </div>
+        
+        <Footer /></>
     );
 
 };

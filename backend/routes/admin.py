@@ -34,12 +34,17 @@ async def get_student_route(request: Request):
     return await get_students()
 
 @router.delete('/student')
-async def delete_student_route(request : Request):
-    user = verify_access(request.headers.get("Authorization"))
+async def delete_student_route(request: Request):
+    auth_header = request.headers.get("Authorization") or ""
+    user = verify_access(auth_header)
     if user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="You are not authorized to perform this action")
     body = await request.json()
-    return await delete_student(body.get("register_number"))
+    register_number = body.get("register_number")
+    if not register_number:
+        raise HTTPException(status_code=400, detail="Missing register_number")
+    return await delete_student(register_number)
+
 
 
 @router.get('/teacher/all')

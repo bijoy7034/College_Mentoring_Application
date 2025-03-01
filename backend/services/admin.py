@@ -56,41 +56,57 @@ async def get_students():
 
 async def delete_student(id: int):
     existing_entry = await user_collection.find_one({"register_number": id})
+    
     if not existing_entry:
         raise HTTPException(status_code=404, detail="Student not found")
-    await user_collection.delete_one({"register_number" : id})
+
+    teacher_id = existing_entry.get('teacher_id')
+    
+    if teacher_id:
+        try:
+            result = await user_collection.update_one(
+                {"_id": ObjectId(teacher_id)}, 
+                {"$pull": {"students": {"_id": ObjectId(existing_entry["_id"])}}}
+            )
+            if result.matched_count == 0:
+                raise HTTPException(status_code=404, detail="Teacher not found")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error updating teacher: {str(e)}")
+
+    try:
+        delete_result = await user_collection.delete_one({"register_number": id})
+        if delete_result.deleted_count == 0:
+            raise HTTPException(status_code=500, detail="Failed to delete student")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting student: {str(e)}")
+
     return {"message": "Student deleted successfully"}
+
 
 async def assign_students(std_id: str, teacher_id: str):
     try:
-        # Validate ObjectIds
         try:
             std_object_id = ObjectId(std_id)
             teacher_object_id = ObjectId(teacher_id)
         except Exception:
             raise HTTPException(status_code=400, detail="Invalid student or teacher ID format")
         
-        # Fetch the student and teacher from the database
         student = await user_collection.find_one({"_id": std_object_id, "role": "student"})
         teacher = await user_collection.find_one({"_id": teacher_object_id, "role": "teacher"})
         
-        # Handle case where student or teacher doesn't exist
         if not student:
             raise HTTPException(status_code=404, detail="Student not found")
         if not teacher:
             raise HTTPException(status_code=404, detail="Teacher not found")
         
-        # Check if the student is already assigned to the same teacher
         if student.get("teacher_id") == teacher_id:
             raise HTTPException(status_code=400, detail="Student is already assigned to this teacher")
         
-        # Update the student with the new teacher ID
         await user_collection.update_one(
             {"_id": std_object_id}, 
             {"$set": {"teacher_id": teacher_id}}
         )
         
-        # Add the student to the teacher's list of students (if not already there)
         if student["_id"] not in teacher.get("students", []):
             await user_collection.update_one(
                 {"_id": teacher_object_id},

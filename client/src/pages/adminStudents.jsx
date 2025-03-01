@@ -58,15 +58,37 @@ export default function AdminStudents() {
                     "Content-Type": "application/json",
                 }
             });
+            
 
             setGeneratedPassword(response.data.password);
             setStudents([...students, formData]);
 
+            
             setShowSuccess(true);
         } catch (err) {
             console.log(err);
         }
     };
+
+    const handleDelete = async (id) => {
+        try {
+            const response = await axios.delete("http://127.0.0.1:8000/admin/student/", {
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem('token')}`,
+                    "Content-Type": "application/json",
+                },
+                data: { register_number: id }  
+            });
+    
+            if (response.status === 200) {
+                setStudents(students.filter(student => student.register_number !== id));
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Error deleting student");
+        }
+    };
+    
 
     const handleAssignTeacher = async () => {
         if (selectedTeacher && selectedStudent) {
@@ -88,7 +110,7 @@ export default function AdminStudents() {
                 console.log(err);
     
                 if (err.response && err.response.data && err.response.data.detail) {
-                    alert(err.response.data.detail); // Show the actual error message
+                    alert(err.response.data.detail);
                 } else {
                     alert('An error occurred while assigning the teacher. Please try again.');
                 }
@@ -140,7 +162,7 @@ export default function AdminStudents() {
                                 <td>{student.email}</td>
                                 <td>
                                     <button className="btn btn-outline-primary btn-sm mx-1">Update</button>
-                                    <button className="btn btn-outline-danger btn-sm mx-1">Delete</button>
+                                    <button className="btn btn-outline-danger btn-sm mx-1" onClick={(e)=>handleDelete(student.register_number)}>Delete</button>
                                     <button
                                         className="btn btn-outline-success btn-sm mx-1"
                                         data-bs-toggle="modal"
@@ -156,7 +178,6 @@ export default function AdminStudents() {
                 </table>
             </div>
 
-            {/* Bootstrap Modal for Adding Student */}
             {/* Bootstrap Modal for Adding Student */}
             <div className="modal fade" id="addStudentModal" tabIndex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
                 <div className="modal-dialog modal-dialog-centered">

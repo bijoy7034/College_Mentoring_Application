@@ -1,4 +1,4 @@
-from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorClient # type: ignore
 from config import MONGO_URI,DB_NAME
 from fastapi import HTTPException
 
