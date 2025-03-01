@@ -1,18 +1,16 @@
-import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from "react-router-dom";
 
-export default function Navbar() {
+const  StudentNav = () => {
     const navigate = useNavigate();
 
     const handleLogout = () => {
         localStorage.removeItem('token');
-        navigate('/admin');
+        navigate('/');
     };
-
-    return (
+    return ( 
         <nav className="navbar navbar-expand-lg navbar-dark bg-dark border-body">
             <div className="container">
-                <NavLink className="navbar-brand" to="/admin/home">Mentoring Admin</NavLink>
+                <NavLink className="navbar-brand" to="/student/home">Student DashBoard</NavLink>
                 <button 
                     className="navbar-toggler" 
                     type="button" 
@@ -27,13 +25,10 @@ export default function Navbar() {
                 <div className="collapse navbar-collapse" id="navbarNav">
                     <ul className="navbar-nav ms-auto d-flex align-items-center">
                         <li className="nav-item">
-                            <NavLink className="nav-link" to="/admin/home" end>Home</NavLink>
+                            <NavLink className="nav-link" to="/student/home" end>Home</NavLink>
                         </li>
                         <li className="nav-item">
-                            <NavLink className="nav-link" to="/admin/add-student">Add Student</NavLink>
-                        </li>
-                        <li className="nav-item">
-                            <NavLink className="nav-link" to="/admin/add-teacher">Add Teacher</NavLink>
+                            <NavLink className="nav-link" to="/student/add-student">Profile</NavLink>
                         </li>
                         <li className="nav-item">
                             <button className="btn btn-danger btn-sm ms-3" onClick={handleLogout}>Logout</button>
@@ -42,5 +37,7 @@ export default function Navbar() {
                 </div>
             </div>
         </nav>
-    );
+     );
 }
+ 
+export default StudentNav;

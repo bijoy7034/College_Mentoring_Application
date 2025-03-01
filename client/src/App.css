@@ -9,3 +9,66 @@
     padding: 43px;
     border: 0.01px solid rgba(106, 106, 106, 0.297);
 }
+
+
+.student_stepper {
+    margin-top: 20px;
+    border-radius: 15px;
+    padding: 30px;
+    border: 1px solid rgba(106, 106, 106, 0.2); /* Adds subtle shadow */
+}
+
+.student_stepper h5 {
+    font-weight: 500;
+    margin-top: 17px;
+    color: #333;
+}
+
+.student_stepper label {
+    font-weight: 400;
+    margin-top: 7px;
+}
+
+.student_stepper input {
+    width: 100%;
+    height: 50%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    transition: border 0.3s ease-in-out;
+}
+
+.student_stepper input:focus {
+    border-color: #007bff;
+}
+
+.student_stepper .step-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.student_stepper .btn {
+    padding: 10px 20px;
+    border-radius: 5px;
+}
+
+.student_stepper .btn-primary {
+    background-color: #007bff;
+    border: none;
+}
+
+.student_stepper .btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.student_stepper .btn-success {
+    background-color: #28a745;
+    border: none;
+}
+
+.student_stepper .btn-success:hover {
+    background-color: #218838;
+}

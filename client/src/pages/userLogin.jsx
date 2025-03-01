@@ -1,40 +1,43 @@
-import React, { useState } from "react";
 import axios from "axios";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function AdminLogin() {
-  const navigate = useNavigate()
+const UserLogin = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const loginUser = async () => {
+    if (!email || !password) return;
 
-    if (!email || !password) {
-      setError("Please fill in all fields");
-      return; 
-    }
-    setError(""); 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/auth/admin/login", {
+      const response = await axios.post("http://127.0.0.1:8000/auth/login/", {
         email,
         password,
       });
-      if (response.data.access_token){
-        localStorage.setItem("token", response.data.access_token)
-        navigate("/admin/home")
+
+      if (response.data?.access_token) {
+        localStorage.setItem("token", response.data.access_token);
+        setError("");
+        navigate("/student/home");
+      } else {
+        setError("Login failed. Please try again.");
       }
     } catch (err) {
-      console.error("Login failed:", err);
-      setError("Invalid credentials");
+      setError(err.response?.data?.detail || "Invalid Credentials");
     }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    loginUser();
   };
 
   return (
     <div className="container login">
       <b>
-        <h3 className="text-center mb-4 text-bold">Admin Login</h3>
+        <h3 className="text-center mb-4 text-bold">Login</h3>
       </b>
 
       {error && (
@@ -47,6 +50,7 @@ export default function AdminLogin() {
         <div className="mb-3">
           <label className="form-label">Email address</label>
           <input
+            value={email}
             onChange={(e) => setEmail(e.target.value)}
             type="email"
             className="form-control"
@@ -57,6 +61,7 @@ export default function AdminLogin() {
         <div className="mb-3">
           <label className="form-label">Password</label>
           <input
+            value={password}
             onChange={(e) => setPassword(e.target.value)}
             type="password"
             className="form-control"
@@ -77,4 +82,6 @@ export default function AdminLogin() {
       </form>
     </div>
   );
-}
+};
+
+export default UserLogin;
