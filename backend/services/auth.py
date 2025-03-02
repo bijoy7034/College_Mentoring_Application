@@ -8,7 +8,7 @@ async def login_user(user: UserLogin):
     if not existing_user or not security.verify_password(plain=user.password, hashed=existing_user['password']):
         raise HTTPException(status_code=400, detail="Invalid Credentials")
     access_token = token.create_access({"email" : existing_user['email'], "role" : existing_user['role']})
-    return {"access_token" : access_token, "token_type" : "access_token"}
+    return {"access_token" : access_token, "token_type" : "access_token" , "role" : existing_user.get('role')}
 
 async def login_admin(user: UserLogin):
     existing_user = await admin_collection.find_one({"email" : user.email})

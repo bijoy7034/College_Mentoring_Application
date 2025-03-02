@@ -30,10 +30,10 @@ export default function Navbar() {
                             <NavLink className="nav-link" to="/admin/home" end>Home</NavLink>
                         </li>
                         <li className="nav-item">
-                            <NavLink className="nav-link" to="/admin/add-student">Add Student</NavLink>
+                            <NavLink className="nav-link" to="/admin/students">Add Student</NavLink>
                         </li>
                         <li className="nav-item">
-                            <NavLink className="nav-link" to="/admin/add-teacher">Add Teacher</NavLink>
+                            <NavLink className="nav-link" to="/admin/teachers">Add Teacher</NavLink>
                         </li>
                         <li className="nav-item">
                             <button className="btn btn-danger btn-sm ms-3" onClick={handleLogout}>Logout</button>

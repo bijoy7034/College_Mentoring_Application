@@ -1,4 +1,4 @@
-from bson import ObjectId
+from bson import ObjectId # type: ignore
 from model.teacher import Profile, TeacherPost, StudentPost
 from db import user_collection
 from fastapi import HTTPException, Request
@@ -151,3 +151,16 @@ async def add_profile(email: str, profile_data: Profile):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+async def view_teacher_dash(email: str):
+    try:
+        user = await user_collection.find_one({"email": email})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        user['_id'] = str(user['_id'])
+        for stud in user['students']:
+            stud['_id'] = str(stud['_id'])
+        return user
+    except HTTPException as e:
+        raise e

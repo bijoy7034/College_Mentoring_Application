@@ -75,8 +75,8 @@ const SemesterGrid = () => {
           <React.Fragment key={index}>
             <div className="col-md-6 col-lg-3 mb-4">
               <div
-                className={`card text-white bg-primary shadow-sm rounded ${
-                  expandedIndex === index ? "active" : ""
+                className={`card text-white rounded-3 ${
+                  expandedIndex === index ? "bg-secondary" : "bg-primary"
                 }`}
                 onClick={() => toggleExpand(index)}
                 style={{ cursor: "pointer", transition: "0.3s" }}
@@ -89,7 +89,7 @@ const SemesterGrid = () => {
 
             {expandedIndex === index && (
               <div className="col-12 m-3">
-                <div className="card mt-2 shadow-sm p-3">
+                <div className="card mt-2 p-3">
                   <div className="card-body">
                     <h5 className="text-primary">Curricular Details</h5>
                     <div className="row">
@@ -130,7 +130,7 @@ const SemesterGrid = () => {
                         ([field, value]) => (
                           <div key={field} className="col-md-6 mb-2">
                             <label className="form-label">
-                            {field
+                              {field
                                 .replace(/([A-Z])/g, " $1")
                                 .trim()
                                 .replace(/^./, (str) => str.toUpperCase())}
@@ -157,10 +157,13 @@ const SemesterGrid = () => {
                     </div>
 
                     <button
-                      className="btn btn-success mt-3"
+                      className="btn btn-outline-dark mt-3"
                       onClick={() => setShowModal(true)}
                     >
                       Show Character & Personality Traits
+                    </button>
+                    <button className="btn btn-success mt-3 ms-2">
+                        Save
                     </button>
 
                     <button
@@ -169,6 +172,7 @@ const SemesterGrid = () => {
                     >
                       Close
                     </button>
+
                   </div>
                 </div>
                 <br />

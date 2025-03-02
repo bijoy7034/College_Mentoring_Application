@@ -19,8 +19,13 @@ const UserLogin = () => {
 
       if (response.data?.access_token) {
         localStorage.setItem("token", response.data.access_token);
-        setError("");
-        navigate("/student/home");
+        if (response.data.role === "student"){
+          navigate('/student/home')
+        }
+        else {
+          navigate('/teacher/home')
+        }
+        
       } else {
         setError("Login failed. Please try again.");
       }

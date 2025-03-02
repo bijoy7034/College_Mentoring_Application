@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
 from utils.token import verify_access
 from model.teacher import Profile, StudentPost, TeacherPost
-from services.admin import add_profile, add_students, add_teachers, assign_students, delete_student, get_student, get_students, get_teachers, update_student
+from services.admin import add_profile, add_students, add_teachers, assign_students, delete_student, get_student, get_students, get_teachers, update_student, view_teacher_dash
 
 router = APIRouter()
 
@@ -81,3 +81,10 @@ async def update_student_profile_route(request: Request, profile_data: Profile):
         raise HTTPException(status_code=403, detail="You are not authorized to perform this action")
     return await add_profile(email=user.get('email'), profile_data=profile_data)
 
+@router.get('/teacher/home')
+async def get_teacher_dash(request: Request):
+    user = verify_access(request.headers.get("Authorization"))
+    
+    if user.get("role") != "teacher":
+        raise HTTPException(status_code=403, detail="You are not authorized to perform this action")
+    return await view_teacher_dash(user.get("email"))
