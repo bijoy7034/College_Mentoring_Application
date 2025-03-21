@@ -28,7 +28,7 @@ const  StudentNav = () => {
                             <NavLink className="nav-link" to="/student/home" end>Home</NavLink>
                         </li>
                         <li className="nav-item">
-                            <NavLink className="nav-link" to="/student/add-student">Profile</NavLink>
+                            <NavLink className="nav-link" to="/student/profile">Profile</NavLink>
                         </li>
                         <li className="nav-item">
                             <button className="btn btn-danger btn-sm ms-3" onClick={handleLogout}>Logout</button>

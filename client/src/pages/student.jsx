@@ -396,7 +396,7 @@ const Student = () => {
                     </div>
                 </div>
                 <br /><br />
-                <SemesterGrid/>
+                <SemesterGrid studentDetails={studentDetails}/>
                 <br /></>
             )}
         </div>

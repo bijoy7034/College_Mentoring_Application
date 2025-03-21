@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import TeacherNav from "../components/teacherNav";
 import Footer from "../components/footer";
+import { useNavigate } from "react-router-dom";
 
 export default function Teacher() {
   const [teacher, setTeacher] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/admin/teacher/home", {
@@ -61,7 +64,12 @@ export default function Teacher() {
                       <td>{student.department}</td>
                       <td>{student.email}</td>
                       <td>{student.register_number}</td>
-                      <td><button className="btn btn-outline-success btn-sm">View Details</button></td>
+                      <td><button 
+                          className="btn btn-outline-success btn-sm"
+                          onClick={() => navigate(`/teacher/student/${student.email}`)}
+                        >
+                          View Details
+                        </button></td>
                     </tr>
                   ))}
                 </tbody>

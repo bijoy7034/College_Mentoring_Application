@@ -10,7 +10,7 @@ const  TeacherNav = () => {
     return ( 
         <nav className="navbar navbar-expand-lg navbar-dark bg-dark border-body">
             <div className="container">
-                <NavLink className="navbar-brand" to="/student/home">Teacher DashBoard</NavLink>
+                <NavLink className="navbar-brand" to="/teacher/home">Teacher DashBoard</NavLink>
                 <button 
                     className="navbar-toggler" 
                     type="button" 
@@ -25,7 +25,7 @@ const  TeacherNav = () => {
                 <div className="collapse navbar-collapse" id="navbarNav">
                     <ul className="navbar-nav ms-auto d-flex align-items-center">
                         <li className="nav-item">
-                            <NavLink className="nav-link" to="/student/home" end>Home</NavLink>
+                            <NavLink className="nav-link" to="/teacher/home" end>Home</NavLink>
                         </li>
                         <li className="nav-item">
                             <NavLink className="nav-link" to="/student/add-student">Profile</NavLink>

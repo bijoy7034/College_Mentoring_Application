@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 
 const semesters = Array.from({ length: 8 }, (_, i) => `Semester ${i + 1}`);
 
@@ -24,7 +25,7 @@ const fieldDetails = {
   },
 };
 
-const SemesterGrid = () => {
+const SemesterGrid = (studentDetails) => {
   const [data, setData] = useState(
     Array(8).fill({
       curricular: {
@@ -45,6 +46,34 @@ const SemesterGrid = () => {
       },
     })
   );
+
+  const handleSave = async (index) => {
+    const semesterNumber = index + 1;
+    const studentData = data[index];
+
+    console.log(`Saving Data for Semester ${semesterNumber}:`, studentData);
+
+    try {
+      const response = await axios.post(
+        "http://127.0.0.1:8000/admin/student/add_data",
+        {
+          student_data: studentData,
+          sem: semesterNumber,
+        },
+        {
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem("token"),
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      alert(`Semester ${semesterNumber} data saved successfully!`);
+    } catch (error) {
+      console.error("Error saving semester data:", error);
+      alert("Failed to save semester data. Please try again.");
+    }
+  };
 
   const [expandedIndex, setExpandedIndex] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -71,115 +100,130 @@ const SemesterGrid = () => {
     <div className="container mt-4">
       <h2 className="text-center mb-4">Semester Details</h2>
       <div className="row">
-        {semesters.map((sem, index) => (
-          <React.Fragment key={index}>
-            <div className="col-md-6 col-lg-3 mb-4">
-              <div
-                className={`card text-white rounded-3 ${
-                  expandedIndex === index ? "bg-secondary" : "bg-primary"
-                }`}
-                onClick={() => toggleExpand(index)}
-                style={{ cursor: "pointer", transition: "0.3s" }}
-              >
-                <div className="card-body text-center">
-                  <h5 className="card-title">{sem}</h5>
-                </div>
-              </div>
-            </div>
+        {semesters.map((sem, index) => {
+          const semesterKey = `semester_${index + 1}`;
+          const isSaved = studentDetails?.studentDetails?.[semesterKey];
 
-            {expandedIndex === index && (
-              <div className="col-12 m-3">
-                <div className="card mt-2 p-3">
-                  <div className="card-body">
-                    <h5 className="text-primary">Curricular Details</h5>
-                    <div className="row">
-                      {Object.entries(data[index].curricular).map(
-                        ([field, value]) => (
-                          <div key={field} className="col-md-6 mb-2">
-                            <label className="form-label">
-                              {field
-                                .replace(/([A-Z])/g, " $1")
-                                .trim()
-                                .replace(/^./, (str) => str.toUpperCase())}
-                            </label>
-
-                            <input
-                              type="text"
-                              value={value}
-                              onChange={(e) =>
-                                handleChange(
-                                  index,
-                                  "curricular",
-                                  field,
-                                  e.target.value
-                                )
-                              }
-                              className="form-control"
-                            />
-                            <small className="text-muted">
-                              {fieldDetails.curricular[field]}
-                            </small>
-                          </div>
-                        )
-                      )}
-                    </div>
-
-                    <h5 className="text-primary mt-3">Traits & Habits</h5>
-                    <div className="row">
-                      {Object.entries(data[index].traits).map(
-                        ([field, value]) => (
-                          <div key={field} className="col-md-6 mb-2">
-                            <label className="form-label">
-                              {field
-                                .replace(/([A-Z])/g, " $1")
-                                .trim()
-                                .replace(/^./, (str) => str.toUpperCase())}
-                            </label>
-                            <input
-                              type="text"
-                              value={value}
-                              onChange={(e) =>
-                                handleChange(
-                                  index,
-                                  "traits",
-                                  field,
-                                  e.target.value
-                                )
-                              }
-                              className="form-control"
-                            />
-                            <small className="text-muted">
-                              {fieldDetails.traits[field]}
-                            </small>
-                          </div>
-                        )
-                      )}
-                    </div>
-
-                    <button
-                      className="btn btn-outline-dark mt-3"
-                      onClick={() => setShowModal(true)}
-                    >
-                      Show Character & Personality Traits
-                    </button>
-                    <button className="btn btn-success mt-3 ms-2">
-                        Save
-                    </button>
-
-                    <button
-                      className="btn btn-danger mt-3 ms-2"
-                      onClick={() => setExpandedIndex(null)}
-                    >
-                      Close
-                    </button>
-
+          return (
+            <React.Fragment key={index}>
+              <div className="col-md-6 col-lg-3 mb-4">
+                <div
+                  className={`card text-white rounded-3 ${
+                    isSaved
+                      ? "bg-success"
+                      : expandedIndex === index
+                      ? "bg-secondary"
+                      : "bg-primary"
+                  }`}
+                  onClick={() => !isSaved && toggleExpand(index)} // Prevent expansion if saved
+                  style={{
+                    cursor: isSaved ? "not-allowed" : "pointer",
+                    transition: "0.3s",
+                    pointerEvents: isSaved ? "none" : "auto", // Disable interaction
+                  }}
+                >
+                  <div className="card-body text-center">
+                    <h5 className="card-title">{sem}</h5>
                   </div>
                 </div>
-                <br />
               </div>
-            )}
-          </React.Fragment>
-        ))}
+
+              {expandedIndex === index && (
+                <div className="col-12 m-3">
+                  <div className="card mt-2 p-3">
+                    <div className="card-body">
+                      <h5 className="text-primary">Curricular Details</h5>
+                      <div className="row">
+                        {Object.entries(data[index].curricular).map(
+                          ([field, value]) => (
+                            <div key={field} className="col-md-6 mb-2">
+                              <label className="form-label">
+                                {field
+                                  .replace(/([A-Z])/g, " $1")
+                                  .trim()
+                                  .replace(/^./, (str) => str.toUpperCase())}
+                              </label>
+
+                              <input
+                                type="text"
+                                value={value}
+                                onChange={(e) =>
+                                  handleChange(
+                                    index,
+                                    "curricular",
+                                    field,
+                                    e.target.value
+                                  )
+                                }
+                                className="form-control"
+                              />
+                              <small className="text-muted">
+                                {fieldDetails.curricular[field]}
+                              </small>
+                            </div>
+                          )
+                        )}
+                      </div>
+
+                      <h5 className="text-primary mt-3">Traits & Habits</h5>
+                      <div className="row">
+                        {Object.entries(data[index].traits).map(
+                          ([field, value]) => (
+                            <div key={field} className="col-md-6 mb-2">
+                              <label className="form-label">
+                                {field
+                                  .replace(/([A-Z])/g, " $1")
+                                  .trim()
+                                  .replace(/^./, (str) => str.toUpperCase())}
+                              </label>
+                              <input
+                                type="text"
+                                value={value}
+                                onChange={(e) =>
+                                  handleChange(
+                                    index,
+                                    "traits",
+                                    field,
+                                    e.target.value
+                                  )
+                                }
+                                className="form-control"
+                              />
+                              <small className="text-muted">
+                                {fieldDetails.traits[field]}
+                              </small>
+                            </div>
+                          )
+                        )}
+                      </div>
+
+                      <button
+                        className="btn btn-outline-dark mt-3"
+                        onClick={() => setShowModal(true)}
+                      >
+                        Show Character & Personality Traits
+                      </button>
+                      <button
+                        className="btn btn-success mt-3 ms-2"
+                        onClick={() => handleSave(index)}
+                      >
+                        Save
+                      </button>
+
+                      <button
+                        className="btn btn-danger mt-3 ms-2"
+                        onClick={() => setExpandedIndex(null)}
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                  <br />
+                </div>
+              )}
+            </React.Fragment>
+          );
+        })}
       </div>
 
       {/* Bootstrap Modal for Table 1 and Table 2 */}
