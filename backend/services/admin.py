@@ -1,3 +1,4 @@
+from typing import Dict
 from bson import ObjectId # type: ignore
 from model.teacher import Profile, TeacherPost, StudentPost
 from db import user_collection
@@ -164,3 +165,39 @@ async def view_teacher_dash(email: str):
         return user
     except HTTPException as e:
         raise e
+    
+from typing import Dict
+from fastapi import HTTPException
+
+async def add_student_data(email: str, student_data: Dict, sem: int):
+    try:
+        user = await user_collection.find_one({"email": email})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        if f"semester_{sem}" in user:
+            raise HTTPException(status_code=400, detail=f"Semester {sem} data already exists")
+
+        
+        await user_collection.update_one(
+            {"email": email},
+            {"$set": {f"semester_{sem}": student_data}}
+        )
+
+        return {"message": f"Semester {sem} data added successfully"}
+        
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def get_student_details(email: str):
+    try:
+        user = await user_collection.find_one({"email": email})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+    except HTTPException as e:
+        raise e
+    user["_id"] = str(user['_id'])
+    return user
