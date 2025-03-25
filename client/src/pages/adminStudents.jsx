@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '../components/navbar';
 import axios from 'axios';
-import { AiFillFileAdd, AiOutlineCloudDownload } from 'react-icons/ai';
+import { AiFillFileAdd, AiOutlineCloudDownload, AiOutlineUpload } from 'react-icons/ai';
 
 export default function AdminStudents() {
     const [students, setStudents] = useState([]);
@@ -11,6 +11,9 @@ export default function AdminStudents() {
     const [showSuccess, setShowSuccess] = useState(false);
     const [selectedTeacher, setSelectedTeacher] = useState(null);
     const [selectedStudent, setSelectedStudent] = useState(null);
+    const [file, setFile] = useState(null);
+    const [uploadMessage, setUploadMessage] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const departments = [
         "Computer Science",
@@ -21,27 +24,27 @@ export default function AdminStudents() {
         "Information Technology",
     ];
 
+    const fetchStudentsAndTeachers = async () => {
+        try {
+            const studentResponse = await axios.get('http://127.0.0.1:8000/admin/student/all', {
+                headers: { "Authorization": `Bearer ${localStorage.getItem('token')}` },
+            });
+
+            setStudents(Array.isArray(studentResponse.data) ? studentResponse.data : []);
+
+            const teacherResponse = await axios.get('http://127.0.0.1:8000/admin/teacher/all', {
+                headers: { "Authorization": `Bearer ${localStorage.getItem('token')}` },
+            });
+
+            setTeachers(Array.isArray(teacherResponse.data) ? teacherResponse.data : []);
+        } catch (err) {
+            console.error("Error fetching data:", err);
+            setStudents([]);
+            setTeachers([]);
+        }
+    };
+
     useEffect(() => {
-        const fetchStudentsAndTeachers = async () => {
-            try {
-                const studentResponse = await axios.get('http://127.0.0.1:8000/admin/student/all', {
-                    headers: {
-                        "Authorization": `Bearer ${localStorage.getItem('token')}`,
-                    }
-                });
-                setStudents(studentResponse.data);
-
-                const teacherResponse = await axios.get('http://127.0.0.1:8000/admin/teacher/all', {
-                    headers: {
-                        "Authorization": `Bearer ${localStorage.getItem('token')}`,
-                    }
-                });
-                setTeachers(teacherResponse.data);
-            } catch (err) {
-                console.log(err);
-            }
-        };
-
         fetchStudentsAndTeachers();
     }, []);
 
@@ -58,15 +61,13 @@ export default function AdminStudents() {
                     "Content-Type": "application/json",
                 }
             });
-            
 
             setGeneratedPassword(response.data.password);
-            setStudents([...students, formData]);
+            setStudents(prevStudents => [...prevStudents, formData]);
 
-            
             setShowSuccess(true);
         } catch (err) {
-            console.log(err);
+            console.error("Error adding student:", err);
         }
     };
 
@@ -79,16 +80,15 @@ export default function AdminStudents() {
                 },
                 data: { register_number: id }  
             });
-    
+
             if (response.status === 200) {
-                setStudents(students.filter(student => student.register_number !== id));
+                setStudents(prevStudents => prevStudents.filter(student => student.register_number !== id));
             }
         } catch (err) {
-            console.error(err);
+            console.error("Error deleting student:", err);
             alert("Error deleting student");
         }
     };
-    
 
     const handleAssignTeacher = async () => {
         if (selectedTeacher && selectedStudent) {
@@ -102,46 +102,78 @@ export default function AdminStudents() {
                         "Content-Type": "application/json",
                     }
                 });
-    
+
                 alert('Teacher assigned successfully!');
                 setSelectedTeacher(null);
                 setSelectedStudent(null);
             } catch (err) {
-                console.log(err);
-    
-                if (err.response && err.response.data && err.response.data.detail) {
-                    alert(err.response.data.detail);
-                } else {
-                    alert('An error occurred while assigning the teacher. Please try again.');
-                }
+                console.error("Error assigning teacher:", err);
+
+                alert(err.response?.data?.detail || 'An error occurred while assigning the teacher.');
             }
         } else {
             alert("Please select both a student and a teacher before assigning.");
         }
     };
-    
 
+    const handleFileChange = (e) => {
+        if (e.target.files?.length > 0) {
+            setFile(e.target.files[0]);
+        }
+    };
+
+    const handleFileUpload = async () => {
+        if (!file) {
+            alert("Please select a CSV file first.");
+            return;
+        }
+
+        setLoading(true);
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const response = await axios.post("http://127.0.0.1:8000/admin/students/bulk", formData, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+
+            setUploadMessage(response.data.message);
+            setFile(null);
+            fetchStudentsAndTeachers();
+        } catch (err) {
+            console.error("Upload error:", err);
+            setUploadMessage("Error uploading file. Please check the format.");
+        } finally {
+            setLoading(false);
+        }
+    };
+    
     const handleAddAnother = () => {
         setFormData({ name: "", department: "", email: "", register_number: "" });
         setGeneratedPassword("");
         setShowSuccess(false);
     };
 
+
     return (
         <div>
             <Navbar />
             <div className="container mt-4">
-                <div className="d-flex justify-content-between align-items-center">
+            <div className="d-flex justify-content-between align-items-center">
                     <h4>Students</h4>
                     <div>
                         <button type="button" className="btn btn-dark btn-sm mx-1" data-bs-toggle="modal" data-bs-target="#addStudentModal">
                             <AiFillFileAdd size={18} className="me-1" /> Add
                         </button>
-                        <button className="btn btn-outline-dark btn-sm mx-1">
-                            <AiOutlineCloudDownload size={18} className="me-1" /> Download
+                        <button type="button" className="btn btn-dark btn-sm mx-1" data-bs-toggle="modal" data-bs-target="#uploadFileModal">
+                            <AiOutlineUpload size={18} className="me-1" /> Upload CSV
                         </button>
                     </div>
                 </div>
+                
 
                 <table className="table">
                     <thead className="thead-dark">
@@ -226,6 +258,29 @@ export default function AdminStudents() {
                                     </div>
                                 </form>
                             )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+            <div className="modal fade" id="uploadFileModal" tabIndex={-1} aria-hidden="true">
+                <div className="modal-dialog modal-dialog-centered">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h5 className="modal-title">Upload Student CSV</h5>
+                            <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div className="modal-body">
+                            <input type="file" accept=".csv" className="form-control" onChange={handleFileChange} />
+                            {uploadMessage && <p className="mt-2 text-success">{uploadMessage}</p>}
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn btn-dark btn-sm" onClick={handleFileUpload} disabled={loading}>
+                                {loading ? "Uploading..." : "Upload"}
+                            </button>
                         </div>
                     </div>
                 </div>

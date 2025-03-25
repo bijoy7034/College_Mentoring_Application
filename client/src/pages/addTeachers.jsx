@@ -58,6 +58,23 @@ export default function AdminTeachers() {
         }
     };
 
+    const handleDelete = async (id) => {
+        try {
+            const response = await axios.delete("http://127.0.0.1:8000/admin/teacher/", {
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem('token')}`,
+                    "Content-Type": "application/json",
+                },
+                data: { email: id }  
+            });
+
+                setTeachers(prev => prev.filter(teacher => teacher.email !== id));
+        } catch (err) {
+            console.error("Error deleting student:", err);
+            alert("Error deleting student");
+        }
+    };
+
     const handleAddAnother = () => {
         setFormData({ name: "", department: "", phone: "", email: "" });
         setGeneratedPassword("");
@@ -102,7 +119,7 @@ export default function AdminTeachers() {
                                 <td>{teacher.phone}</td>
                                 <td>{teacher.email}</td>
                                 <td>
-                                    <button className="btn btn-outline-danger btn-sm mx-1">Delete</button>
+                                    <button className="btn btn-outline-danger btn-sm mx-1" onClick={(e)=>handleDelete(teacher.email)}>Delete</button>
                                     <button className="btn btn-outline-primary btn-sm mx-1">Update</button>
                                     <button className="btn btn-outline-success btn-sm mx-1" onClick={() => handleViewStudents(teacher)}>View</button>
                                 </td>

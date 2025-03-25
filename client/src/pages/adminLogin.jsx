@@ -32,7 +32,7 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="container login">
+    <div className="container login" style={{width : "500px", padding: "40px"}}>
       <b>
         <h3 className="text-center mb-4 text-bold">Admin Login</h3>
       </b>

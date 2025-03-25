@@ -84,6 +84,32 @@ async def delete_student(id: int):
     return {"message": "Student deleted successfully"}
 
 
+async def delete_teacher(email: str):
+    existing_entry = await user_collection.find_one({"email": email})
+    if not existing_entry:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+
+    teacher_id = existing_entry["_id"]
+
+    try:
+        update_result = await user_collection.update_many(
+            {"teacher_id": ObjectId(teacher_id)},
+            {"$unset": {"teacher_id": ""}} 
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error unassigning students: {str(e)}")
+
+    try:
+        delete_result = await user_collection.delete_one({"_id": ObjectId(teacher_id)})
+        if delete_result.deleted_count == 0:
+            raise HTTPException(status_code=500, detail="Failed to delete teacher")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting teacher: {str(e)}")
+
+    return {"message": "Teacher deleted successfully"}
+
+    
+
 async def assign_students(std_id: str, teacher_id: str):
     try:
         try:

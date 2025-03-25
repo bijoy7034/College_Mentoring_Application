@@ -1,7 +1,11 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, File, HTTPException, Request, UploadFile
+from utils.security import hash_password
 from utils.token import verify_access
 from model.teacher import Profile, StudentPost, TeacherPost
-from services.admin import add_profile, add_student_data, add_students, add_teachers, assign_students, delete_student, get_student, get_student_details, get_students, get_teachers, update_student, view_teacher_dash
+from services.admin import add_profile, add_student_data, add_students, add_teachers, assign_students, delete_student, delete_teacher, get_student, get_student_details, get_students, get_teachers, update_student, view_teacher_dash
+import io
+import csv
+from db import user_collection
 
 router = APIRouter()
 
@@ -56,6 +60,16 @@ async def get_teacher_route(request: Request):
         raise HTTPException(status_code=403, detail="You are not authorized to perform this action")
     return await get_teachers()
 
+
+@router.delete("/teacher")
+async def delete_teacher_route(request: Request):
+    user = verify_access(request.headers.get("Authorization"))
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="You are not authorized to perform this action")
+    body = await request.json()
+    email = body.get("email")
+    return await delete_teacher(email=email)
+
 @router.patch('/assign')
 async def assign_student_to_teacher_route(request: Request):
     user = verify_access(request.headers.get("Authorization"))
@@ -106,6 +120,48 @@ async def add_student_data_route(
 
     return await add_student_data(email=user.get('email'), student_data=student_data, sem=sem)
 
+
+@router.post('/students/bulk')
+async def add_students_bulk(request: Request, file: UploadFile = File(...)):
+    user = verify_access(request.headers.get("Authorization"))
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="You are not authorized to perform this action")
+
+    content = await file.read()
+    decoded_content = content.decode("utf-8")
+    csv_reader = csv.DictReader(io.StringIO(decoded_content))
+
+    students_to_add = []
+
+    for row in csv_reader:
+        try:
+            register_number = int(row["register_number"])
+
+            existing_student = await user_collection.find_one({"register_number": register_number})
+            if existing_student:
+                raise HTTPException(status_code=400, detail=f"Student with register number {register_number} already exists")
+            
+            generated_password = row["name"].split(" ")[0].lower() + str(register_number)[-4:]
+            hashed_password = hash_password(generated_password)
+
+            student_data = {
+                "name": row["name"],
+                "department": row["department"],
+                "email": row["email"],
+                "register_number": register_number,
+                "password": hashed_password,
+                "role": "student",
+                "profile": None
+            }
+            students_to_add.append(student_data)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Error processing row: {row}, Error: {str(e)}")
+
+
+    if students_to_add:
+        await user_collection.insert_many(students_to_add)
+
+    return {"message": f"{len(students_to_add)} students added successfully"}
 
 
 @router.get('/teacher/student_details')
