@@ -2,7 +2,7 @@ from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 from utils.security import hash_password
 from utils.token import verify_access
 from model.teacher import Profile, StudentPost, TeacherPost
-from services.admin import add_profile, add_student_data, add_students, add_teachers, assign_students, delete_student, delete_teacher, get_student, get_student_details, get_students, get_teachers, update_student, view_teacher_dash
+from services.admin import add_profile, add_student_data, add_students, add_teachers, assign_students, delete_student, delete_teacher, get_student, get_student_details, get_students, get_teachers, student_comment, update_student, view_teacher_dash
 import io
 import csv
 from db import user_collection
@@ -176,3 +176,41 @@ async def get_student_details_route(request: Request):
         raise HTTPException(status_code=400, detail="Missing student_email parameter")
 
     return await get_student_details(email=student_email)
+
+@router.patch('/teacher/comment')
+async def add_comment_route(request: Request):
+    user = verify_access(request.headers.get("Authorization"))
+    
+    if user.get("role") != "teacher":
+        raise HTTPException(status_code=403, detail="You are not authorized to perform this action")
+    
+    body = await request.json()
+    email = body.get("email")
+    comment = body.get("comment")
+    sem = body.get("sem")
+    
+    if not email or not comment or not sem:
+        raise HTTPException(status_code=400, detail="Missing required fields")
+
+    return await student_comment(email=email, comment=comment, sem=sem)
+
+@router.get("/teacher/student_comments")
+async def get_student_comments(request: Request):
+    user = verify_access(request.headers.get("Authorization"))
+    if user.get("role") != "student":
+        raise HTTPException(status_code=403, detail="You are not authorized to perform this action")
+
+    email = user.get("email")
+    if not email:
+        raise HTTPException(status_code=400, detail="Email parameter is required")
+
+    student = await user_collection.find_one({"email": email})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    semester_comments = {
+        key: student[key].get("comment", "No comment available") 
+        for key in student.keys() if key.startswith("semester_")
+    }
+
+    return {"email": email, "comments": semester_comments}

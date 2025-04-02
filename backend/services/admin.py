@@ -227,3 +227,25 @@ async def get_student_details(email: str):
         raise e
     user["_id"] = str(user['_id'])
     return user
+
+async def student_comment(comment: str, email: str, sem: int):
+    semester_key = f"semester_{sem}"
+    
+    student = await user_collection.find_one({"email": email})
+    
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+
+    if semester_key not in student:
+        raise HTTPException(status_code=400, detail=f"Semester {sem} details not found")
+
+    update_result = await user_collection.update_one(
+        {"email": email},
+        {"$set": {f"{semester_key}.comment": comment}}
+    )
+
+    if update_result.modified_count == 0:
+        raise HTTPException(status_code=500, detail="Failed to add comment")
+
+    return {"message": f"Comment added to {semester_key}"}

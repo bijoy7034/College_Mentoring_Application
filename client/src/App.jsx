@@ -11,6 +11,7 @@ import TeacherNav from "./components/teacherNav";
 import Teacher from "./pages/teacher";
 import StudentDetails from "./pages/studentDetails";
 import StudentProfile from "./pages/studentProfile";
+import StudentComments from "./pages/comments";
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/student/comment" element={<ProtectedRoute><StudentComments/></ProtectedRoute>}/>
           <Route path="/teacher/student/:id" element={<StudentDetails />} />
           <Route path="/student/home" element={<Student />} />
           <Route path="/teacher/home" element={<Teacher />} />

@@ -31,6 +31,9 @@ const  StudentNav = () => {
                             <NavLink className="nav-link" to="/student/profile">Profile</NavLink>
                         </li>
                         <li className="nav-item">
+                            <NavLink className="nav-link" to="/student/comment">Comments</NavLink>
+                        </li>
+                        <li className="nav-item">
                             <button className="btn btn-danger btn-sm ms-3" onClick={handleLogout}>Logout</button>
                         </li>
                     </ul>
